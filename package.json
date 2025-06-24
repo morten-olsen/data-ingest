@@ -1,0 +1,33 @@
+{
+  "version": "1.0.0",
+  "name": "@morten-olsen/data-ingest-repo",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test:lint": "eslint",
+    "build": "turbo build",
+    "build:dev": "tsc --build --watch",
+    "test:unit": "vitest --run --coverage --passWithNoTests",
+    "test": "pnpm run \"/^test:.+/\""
+  },
+  "packageManager": "pnpm@10.6.0",
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "devDependencies": {
+    "turbo": "2.5.4",
+    "typescript": "5.8.3",
+    "vitest": "3.2.4",
+    "@vitest/coverage-v8": "3.2.4",
+    "@eslint/eslintrc": "3.3.1",
+    "@eslint/js": "9.29.0",
+    "@pnpm/find-workspace-packages": "6.0.9",
+    "eslint": "9.29.0",
+    "eslint-config-prettier": "10.1.5",
+    "eslint-plugin-import": "2.32.0",
+    "eslint-plugin-prettier": "5.5.0",
+    "prettier": "3.6.0",
+    "typescript-eslint": "8.35.0"
+  }
+}
