@@ -1,0 +1,27 @@
+{
+  "type": "module",
+  "main": "dist/exports.js",
+  "scripts": {
+    "build": "tsc --build"
+  },
+  "packageManager": "pnpm@10.6.0",
+  "files": [
+    "dist"
+  ],
+  "exports": {
+    ".": "./dist/exports.js",
+    "./vitest": "./dist/vitest.js"
+  },
+  "devDependencies": {
+    "@types/node": "24.0.3",
+    "@vitest/coverage-v8": "3.2.4",
+    "typescript": "5.8.3",
+    "vitest": "3.2.4",
+    "@morten-olsen/data-ingest-configs": "workspace:*"
+  },
+  "dependencies": {
+    "@pnpm/find-workspace-packages": "6.0.9"
+  },
+  "name": "@morten-olsen/data-ingest-tests",
+  "version": "1.0.0"
+}
