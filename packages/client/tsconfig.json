@@ -1,0 +1,9 @@
+{
+  "compilerOptions": {
+    "outDir": "./dist"
+  },
+  "include": [
+    "src/**/*.ts"
+  ],
+  "extends": "@morten-olsen/data-ingest-configs/tsconfig.json"
+}

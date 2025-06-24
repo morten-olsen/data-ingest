@@ -1,0 +1,104 @@
+{
+  "values": {
+    "monoRepo": true,
+    "packagePrefix": "@morten-olsen/data-ingest-",
+    "packageVersion": "1.0.0"
+  },
+  "entries": [
+    {
+      "timestamp": "2025-06-24T07:04:07.020Z",
+      "template": "monorepo",
+      "values": {
+        "monoRepo": true,
+        "packagePrefix": "@morten-olsen/data-ingest-",
+        "packageVersion": "1.0.0"
+      }
+    },
+    {
+      "timestamp": "2025-06-24T07:04:17.446Z",
+      "template": "pkg",
+      "values": {
+        "monoRepo": true,
+        "packagePrefix": "@morten-olsen/data-ingest-",
+        "packageVersion": "1.0.0",
+        "packageName": "server"
+      }
+    },
+    {
+      "timestamp": "2025-06-24T07:04:25.599Z",
+      "template": "pkg",
+      "values": {
+        "monoRepo": true,
+        "packagePrefix": "@morten-olsen/data-ingest-",
+        "packageVersion": "1.0.0",
+        "packageName": "client"
+      }
+    },
+    {
+      "timestamp": "2025-06-24T07:05:51.840Z",
+      "template": "api",
+      "values": {
+        "monoRepo": true,
+        "packagePrefix": "@morten-olsen/data-ingest-",
+        "packageVersion": "1.0.0",
+        "target-pkg": {
+          "name": "@morten-olsen/data-ingest-server",
+          "dir": "/Users/alice/Projects/private/data-ingest/packages/server"
+        }
+      }
+    },
+    {
+      "timestamp": "2025-06-24T07:14:15.245Z",
+      "template": "api",
+      "values": {
+        "monoRepo": true,
+        "packagePrefix": "@morten-olsen/data-ingest-",
+        "packageVersion": "1.0.0",
+        "target-pkg": {
+          "name": "@morten-olsen/data-ingest-server",
+          "dir": "/Users/alice/Projects/private/data-ingest/packages/server"
+        }
+      }
+    },
+    {
+      "timestamp": "2025-06-24T07:15:15.815Z",
+      "template": "api",
+      "values": {
+        "monoRepo": true,
+        "packagePrefix": "@morten-olsen/data-ingest-",
+        "packageVersion": "1.0.0",
+        "target-pkg": {
+          "name": "@morten-olsen/data-ingest-server",
+          "dir": "/Users/alice/Projects/private/data-ingest/packages/server"
+        }
+      }
+    },
+    {
+      "timestamp": "2025-06-24T08:16:31.659Z",
+      "template": "eslint",
+      "values": {
+        "monoRepo": true,
+        "packagePrefix": "@morten-olsen/data-ingest-",
+        "packageVersion": "1.0.0",
+        "target-pkg": {
+          "name": "@morten-olsen/data-ingest-repo",
+          "dir": "/Users/alice/Projects/private/data-ingest"
+        }
+      }
+    },
+    {
+      "timestamp": "2025-06-24T08:30:31.464Z",
+      "template": "docker",
+      "values": {
+        "monoRepo": true,
+        "packagePrefix": "@morten-olsen/data-ingest-",
+        "packageVersion": "1.0.0",
+        "target-pkg": {
+          "name": "@morten-olsen/data-ingest-server",
+          "dir": "/Users/alice/Projects/private/data-ingest/packages/server"
+        },
+        "node-version": "23"
+      }
+    }
+  ]
+}
