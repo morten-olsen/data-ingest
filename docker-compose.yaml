@@ -8,7 +8,6 @@ services:
       dockerfile: packages/server/Dockerfile
     networks:
       - dataflow
-      - mqtt
       - loadbalancer
     environment:
       MQTT_BROKER_URL: $MQTT_BROKER_URL
@@ -25,13 +24,129 @@ services:
       - traefik.http.routers.dataflow-ingest.tls.certresolver=letsencrypt
       - traefik.http.routers.dataflow-ingest.entrypoints=websecure
       - traefik.http.services.dataflow-ingest.loadbalancer.server.port=3400
+  notebooks:
+    restart: unless-stopped
+    container_name: dataflow-notebooks
+    build:
+      context: ./containers/notebooks
+      dockerfile: Dockerfile
+    networks:
+      - dataflow
+      - loadbalancer
+    environment:
+      POSTGRES_PASSWORD: $POSTGRES_PASSWORD
+    volumes:
+      - $STORAGE/notebooks:/notebooks
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.dataflow-notebooks.rule=Host(`notebooks.$DOMAIN`)
+      - traefik.http.routers.dataflow-notebooks.tls=true
+      - traefik.http.routers.dataflow-notebooks.tls.domains[0].main=$DOMAIN
+      - traefik.http.routers.dataflow-notebooks.tls.domains[0].sans=*.$DOMAIN
+      - traefik.http.routers.dataflow-notebooks.tls.certresolver=letsencrypt
+      - traefik.http.routers.dataflow-notebooks.entrypoints=websecure
+      - traefik.http.services.dataflow-notebooks.loadbalancer.server.port=8887
+
+  postgres:
+    image: postgres:16
+    restart: unless-stopped
+    container_name: dataflow-postgres
+    hostname: dataflow-postgres
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready", "-u", "postgres"]
+      interval: 30s
+      timeout: 60s
+      retries: 5
+      start_period: 80s
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: $POSTGRES_PASSWORD
+    networks:
+      dataflow:
+        aliases:
+          - dataflow-postgres
+    volumes:
+      - $STORAGE/postgres/data:/var/lib/postgresql/data
+
+  pgadmin:
+    image: dpage/pgadmin4
+    restart: unless-stopped
+    container_name: dataflow-pgadmin
+    hostname: pgadmin
+    healthcheck:
+      test: "wget --no-verbose --tries=1 --spider http://localhost:80 || exit 1"
+      interval: 60s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@$DOMAIN
+      PGADMIN_DEFAULT_PASSWORD: $POSTGRES_PASSWORD
+    volumes:
+      - dataflow-pgadmin-data:/var/lib/pgadmin
+    networks:
+      - loadbalancer
+      - dataflow
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.dataflow-pgadmin.rule=Host(`db.$DOMAIN`)
+      - traefik.http.routers.dataflow-pgadmin.tls=true
+      - traefik.http.routers.dataflow-pgadmin.tls.domains[0].main=$DOMAIN
+      - traefik.http.routers.dataflow-pgadmin.tls.domains[0].sans=*.$DOMAIN
+      - traefik.http.routers.dataflow-pgadmin.tls.certresolver=letsencrypt
+      - traefik.http.routers.dataflow-pgadmin.entrypoints=websecure
+      - traefik.http.services.dataflow-pgadmin.loadbalancer.server.port=80
+    depends_on:
+      - postgres
+
+  mqtt:
+    build: ./containers/mqtt
+    container_name: mqtt
+    hostname: mqtt
+    restart: unless-stopped
+    networks:
+      dataflow:
+        aliases:
+          - mqtt.data.olsen.cloud
+          - mqtt
+    ports:
+      - 1884:1884
+    volumes:
+      - ${STORAGE}/mqtt/data:/data
+
+  db:
+    extends:
+      file: docker-compose.windmill.yaml
+      service: db
+
+  windmill_server:
+    extends:
+      file: docker-compose.windmill.yaml
+      service: windmill_server
+
+  windmill_worker:
+    extends:
+      file: docker-compose.windmill.yaml
+      service: windmill_worker
+
+  windmill_worker_native:
+    extends:
+      file: docker-compose.windmill.yaml
+      service: windmill_worker_native
+
+  caddy:
+    extends:
+      file: docker-compose.windmill.yaml
+      service: caddy
+
+volumes:
+  dataflow-pgadmin-data:
+    driver: local
+
+
 networks:
   dataflow:
-    external: true
     name: dataflow
-  mqtt:
-    external: true
-    name: mqtt
   loadbalancer:
     external: true
     name: loadbalancer

@@ -52,13 +52,15 @@ class DocumentsService extends EventEmitter<DocumentServiceEvents> {
     const hasMore = documents.length > query.limit;
 
     return {
-      documents: documents.map((document) => ({
-        ...document,
-        data: document.data.value,
-        createdAt: document.createdAt.toISOString(),
-        updatedAt: document.updatedAt.toISOString(),
-        deletedAt: document.deletedAt?.toISOString() ?? null,
-      })),
+      documents: documents
+        .map((document) => ({
+          ...document,
+          data: document.data.value,
+          createdAt: document.createdAt.toISOString(),
+          updatedAt: document.updatedAt.toISOString(),
+          deletedAt: document.deletedAt?.toISOString() ?? null,
+        }))
+        .slice(0, query.limit),
       hasMore,
     };
   };
