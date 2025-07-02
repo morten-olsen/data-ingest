@@ -17,10 +17,10 @@ services:
       POSTGRES_DB: ${POSTGRES_DB:-postgres}
     labels:
       - traefik.enable=true
-      - traefik.http.routers.dataflow-ingest.rule=Host(`ingest.$DOMAIN`)
+      - traefik.http.routers.dataflow-ingest.rule=Host(`ingest.data.$DOMAIN`)
       - traefik.http.routers.dataflow-ingest.tls=true
-      - traefik.http.routers.dataflow-ingest.tls.domains[0].main=$DOMAIN
-      - traefik.http.routers.dataflow-ingest.tls.domains[0].sans=*.$DOMAIN
+      - traefik.http.routers.dataflow-ingest.tls.domains[0].main=.data.$DOMAIN
+      - traefik.http.routers.dataflow-ingest.tls.domains[0].sans=*.data.$DOMAIN
       - traefik.http.routers.dataflow-ingest.tls.certresolver=letsencrypt
       - traefik.http.routers.dataflow-ingest.entrypoints=websecure
       - traefik.http.services.dataflow-ingest.loadbalancer.server.port=3400
@@ -36,16 +36,51 @@ services:
     environment:
       POSTGRES_PASSWORD: $POSTGRES_PASSWORD
     volumes:
-      - $STORAGE/notebooks:/notebooks
+      - $STORAGE/data-flow/notebooks:/notebooks
     labels:
       - traefik.enable=true
-      - traefik.http.routers.dataflow-notebooks.rule=Host(`notebooks.$DOMAIN`)
+      - traefik.http.routers.dataflow-notebooks.rule=Host(`notebooks.data.$DOMAIN`)
       - traefik.http.routers.dataflow-notebooks.tls=true
-      - traefik.http.routers.dataflow-notebooks.tls.domains[0].main=$DOMAIN
-      - traefik.http.routers.dataflow-notebooks.tls.domains[0].sans=*.$DOMAIN
+      - traefik.http.routers.dataflow-notebooks.tls.domains[0].main=.data.$DOMAIN
+      - traefik.http.routers.dataflow-notebooks.tls.domains[0].sans=*.data.$DOMAIN
       - traefik.http.routers.dataflow-notebooks.tls.certresolver=letsencrypt
       - traefik.http.routers.dataflow-notebooks.entrypoints=websecure
       - traefik.http.services.dataflow-notebooks.loadbalancer.server.port=8887
+  
+  coder:
+    restart: unless-stopped
+    container_name: dataflow-coder
+    image: ghcr.io/coder/coder:latest
+    environment:
+      CODER_HTTP_ADDRESS: "0.0.0.0:7080"
+      CODER_ACCESS_URL: "https://coder.data.$DOMAIN"
+      CODER_OIDC_ISSUER_URL: https://authentik.${DOMAIN}/application/o/coder/
+      CODER_OIDC_SCOPES: openid,profile,email,offline_access
+      CODER_OIDC_CLIENT_ID: ${CODER_OIDC_CLIENT_ID}
+      CODER_OIDC_CLIENT_SECRET: ${CODER_OIDC_CLIENT_SECRET}
+      CODER_OIDC_SIGN_IN_TEXT: "Sign in with OIDC"
+      CODER_OIDC_ICON_URL: https://authentik.${DOMAIN}/static/dist/assets/icons/icon.png
+      CODER_DISABLE_PASSWORD_AUTH: "true"
+      CODER_OAUTH2_GITHUB_ALLOW_SIGNUPS: "false"
+      #CODER_OAUTH2_GITHUB_DEFAULT_PROVIDER_ENABLE: "false"
+      # CODER_PG_CONNECTION_URL: "postgresql://postgres:${POSTGRES_PASSWORD}@dataflow-postgres:5432/postgres"
+    group_add:
+      - 996
+    volumes:
+      - $STORAGE/data-flow/coder/data:/home/coder/.config
+      - /var/run/docker.sock:/var/run/docker.sock
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.dataflow-coder.rule=Host(`coder.data.$DOMAIN`)
+      - traefik.http.routers.dataflow-coder.tls=true
+      - traefik.http.routers.dataflow-coder.tls.domains[0].main=.data.$DOMAIN
+      - traefik.http.routers.dataflow-coder.tls.domains[0].sans=*.data.$DOMAIN
+      - traefik.http.routers.dataflow-coder.tls.certresolver=letsencrypt
+      - traefik.http.routers.dataflow-coder.entrypoints=websecure
+      - traefik.http.services.dataflow-coder.loadbalancer.server.port=7080
+    networks:
+      - dataflow
+      - loadbalancer
 
   postgres:
     image: postgres:16
@@ -66,7 +101,7 @@ services:
         aliases:
           - dataflow-postgres
     volumes:
-      - $STORAGE/postgres/data:/var/lib/postgresql/data
+      - $STORAGE/data-flow/postgres/data:/var/lib/postgresql/data
 
   pgadmin:
     image: dpage/pgadmin4
@@ -80,7 +115,7 @@ services:
       retries: 3
       start_period: 20s
     environment:
-      PGADMIN_DEFAULT_EMAIL: admin@$DOMAIN
+      PGADMIN_DEFAULT_EMAIL: admin@.data.$DOMAIN
       PGADMIN_DEFAULT_PASSWORD: $POSTGRES_PASSWORD
     volumes:
       - dataflow-pgadmin-data:/var/lib/pgadmin
@@ -89,10 +124,10 @@ services:
       - dataflow
     labels:
       - traefik.enable=true
-      - traefik.http.routers.dataflow-pgadmin.rule=Host(`db.$DOMAIN`)
+      - traefik.http.routers.dataflow-pgadmin.rule=Host(`db.data.$DOMAIN`)
       - traefik.http.routers.dataflow-pgadmin.tls=true
-      - traefik.http.routers.dataflow-pgadmin.tls.domains[0].main=$DOMAIN
-      - traefik.http.routers.dataflow-pgadmin.tls.domains[0].sans=*.$DOMAIN
+      - traefik.http.routers.dataflow-pgadmin.tls.domains[0].main=.data.$DOMAIN
+      - traefik.http.routers.dataflow-pgadmin.tls.domains[0].sans=*.data.$DOMAIN
       - traefik.http.routers.dataflow-pgadmin.tls.certresolver=letsencrypt
       - traefik.http.routers.dataflow-pgadmin.entrypoints=websecure
       - traefik.http.services.dataflow-pgadmin.loadbalancer.server.port=80
@@ -112,7 +147,7 @@ services:
     ports:
       - 1884:1884
     volumes:
-      - ${STORAGE}/mqtt/data:/data
+      - $STORAGE/data-flow/mqtt/data:/data
 
   db:
     extends:

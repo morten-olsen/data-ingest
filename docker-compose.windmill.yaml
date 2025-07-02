@@ -15,7 +15,7 @@ services:
     shm_size: 1g
     restart: unless-stopped
     volumes:
-      - ${STORAGE}/windmill/db:/var/lib/postgresql/data
+      - $STORAGE/data-flow/windmill/db:/var/lib/postgresql/data
     environment:
       POSTGRES_PASSWORD: ${WINDMILL_POSTGRES_PASSWORD}
       POSTGRES_DB: windmill
@@ -43,7 +43,7 @@ services:
       db:
         condition: service_healthy
     volumes:
-      - ${STORAGE}/windmill/logs:/tmp/windmill/logs
+      - $STORAGE/data-flow/windmill/logs:/tmp/windmill/logs
     logging: *default-logging
 
   windmill_worker:
@@ -70,8 +70,8 @@ services:
     volumes:
       # mount the docker socket to allow to run docker containers from within the workers
       - /var/run/docker.sock:/var/run/docker.sock
-      - ${STORAGE}/windmill/cache:/tmp/windmill/cache
-      - ${STORAGE}/windmill/logs:/tmp/windmill/logs
+      - $STORAGE/data-flow/windmill/cache:/tmp/windmill/cache
+      - $STORAGE/data-flow/windmill/logs:/tmp/windmill/logs
     logging: *default-logging
 
   ## This worker is specialized for "native" jobs. Native jobs run in-process and thus are much more lightweight than other jobs
@@ -99,7 +99,7 @@ services:
       db:
         condition: service_healthy
     volumes:
-      - ${STORAGE}/windmill/logs:/tmp/windmill/logs
+      - $STORAGE/data-flow/windmill/logs:/tmp/windmill/logs
     logging: *default-logging
 
   caddy:
@@ -108,7 +108,7 @@ services:
       dockerfile: Dockerfile
     restart: unless-stopped
     volumes:
-      - ${STORAGE}/windmill/caddy:/data
+      - $STORAGE/data-flow/windmill/caddy:/data
     environment:
       - BASE_URL=":80"
     networks:
@@ -118,9 +118,9 @@ services:
     labels:
       'traefik.enable': 'true'
       'traefik.http.routers.windmill.entrypoints': 'websecure'
-      'traefik.http.routers.windmill.rule': 'Host(`windmill.${DOMAIN}`)'
+      'traefik.http.routers.windmill.rule': 'Host(`windmill.data.$DOMAIN`)'
       'traefik.http.routers.windmill.tls': 'true'
       'traefik.http.routers.windmill.tls.certresolver': 'letsencrypt'
-      'traefik.http.routers.windmill.tls.domains[0].main': '${DOMAIN}'
-      'traefik.http.routers.windmill.tls.domains[0].sans': '*.${DOMAIN}'
+      'traefik.http.routers.windmill.tls.domains[0].main': '.data.$DOMAIN'
+      'traefik.http.routers.windmill.tls.domains[0].sans': '*.data.$DOMAIN'
       'traefik.http.services.windmill.loadbalancer.server.port': '80'
